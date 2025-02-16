@@ -38,7 +38,7 @@ jobs:
       - name: Setup PHP with composer v2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.3
+          php-version: 8.4
           tools: composer:v2
       - name: Cache Vendor
         id: cache-vendor
@@ -70,55 +70,57 @@ jobs:
       #   run: php artisan migrate:refresh
       # - name: Run Seeding
       #   run: php artisan db:seed
+      - name: Run Create key
+        run: php artisan key:generate --env=testing
       - name: Run test
         run: php artisan test --filter ユーザー一覧
       - name: Run Migrate Refresh
         run: php artisan migrate:refresh
-      # - name: Run IDE Helper Models
-      #   run: |
-      #     php artisan ide-helper:models --write --reset
-      #     ./vendor/bin/pint app/Models
-      #     if ! git diff --exit-code; then
-      #       echo "Error: The phpdoc for the model ide-helper is not updated!"
-      #       echo "Run: php artisan ide-helper:models --write --reset"
-      #       exit 1
-      #     fi
-      # - name: Cache Pint
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ./.pint.cache
-      #     key: ${{ runner.os }}-pint-${{ hashFiles('**/composer.lock') }}
-      #     restore-keys: ${{ runner.os }}-pint-
-      # - name: Run Pint
-      #   run: ./vendor/bin/pint --test
-      # - name: Cache Rector
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ./storage/rector/cache
-      #     key: ${{ runner.os }}-rector-${{ hashFiles('**/composer.lock') }}
-      #     restore-keys: ${{ runner.os }}-rector-
-      # - name: Run Rector
-      #   run: ./vendor/bin/rector process --dry-run
-      # - name: Cache PHPStan
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ./storage/phpstan
-      #     key: ${{ runner.os }}-phpstan-${{ hashFiles('**/composer.lock') }}
-      #     restore-keys: ${{ runner.os }}-phpstan-
-      # - name: Run PHPStan
-      #   run: ./vendor/bin/phpstan analyze
-      # - name: Cache Pest
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ./storage/pest/cache
-      #     key: ${{ runner.os }}-pest-${{ hashFiles('**/composer.lock') }}
-      #     restore-keys: ${{ runner.os }}-pest-
-      # - name: Run Pest
-      #   env:
-      #     SESSION_DRIVER: array
-      #     DB_CONNECTION: sqlite
-      #     DB_DATABASE: ":memory:"
-      #   run: ./vendor/bin/pest --parallel --cache-directory storage/pest/cache
+      - name: Run IDE Helper Models
+        run: |
+          php artisan ide-helper:models --write --reset
+          ./vendor/bin/pint app/Models
+          if ! git diff --exit-code; then
+            echo "Error: The phpdoc for the model ide-helper is not updated!"
+            echo "Run: php artisan ide-helper:models --write --reset"
+            exit 1
+          fi
+      - name: Cache Pint
+        uses: actions/cache@v4
+        with:
+          path: ./.pint.cache
+          key: ${{ runner.os }}-pint-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-pint-
+      - name: Run Pint
+        run: ./vendor/bin/pint --test
+      - name: Cache Rector
+        uses: actions/cache@v4
+        with:
+          path: ./storage/rector/cache
+          key: ${{ runner.os }}-rector-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-rector-
+      - name: Run Rector
+        run: ./vendor/bin/rector process --dry-run
+      - name: Cache PHPStan
+        uses: actions/cache@v4
+        with:
+          path: ./storage/phpstan
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyze
+      - name: Cache Pest
+        uses: actions/cache@v4
+        with:
+          path: ./storage/pest/cache
+          key: ${{ runner.os }}-pest-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-pest-
+      - name: Run Pest
+        env:
+          SESSION_DRIVER: array
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+        run: ./vendor/bin/pest --parallel --cache-directory storage/pest/cache
   # ci-frontend:
     # runs-on: ubuntu-latest
     # timeout-minutes: 10
