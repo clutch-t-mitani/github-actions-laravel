@@ -72,6 +72,8 @@ jobs:
       #   run: php artisan db:seed
       - name: Run Create key
         run: php artisan key:generate
+      - name: Run config clear
+        run: php artisan config:clear
       - name: Run test
         run: php artisan test --filter ユーザー一覧
       - name: Run Migrate Refresh
