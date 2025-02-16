@@ -116,20 +116,20 @@ jobs:
           DB_DATABASE: ":memory:"
         run: ./vendor/bin/pest --parallel --cache-directory storage/pest/cache
   # ci-frontend:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '>=20.17.0'
-          cache: 'pnpm'
-      - name: Install Dependencies
-        run: pnpm install
-      - name: Run Build
-        run: pnpm run build
+    # runs-on: ubuntu-latest
+    # timeout-minutes: 10
+    # steps:
+    #   - uses: actions/checkout@v4
+    #   - uses: pnpm/action-setup@v4
+    #     with:
+    #       version: 9
+    #       run_install: false
+    #   - name: Setup Node
+    #     uses: actions/setup-node@v4
+    #     with:
+    #       node-version: '>=20.17.0'
+    #       cache: 'pnpm'
+    #   - name: Install Dependencies
+    #     run: pnpm install
+    #   - name: Run Build
+    #     run: pnpm run build
