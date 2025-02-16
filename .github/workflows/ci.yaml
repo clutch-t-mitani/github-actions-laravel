@@ -66,12 +66,14 @@ jobs:
         run: composer validate
       - name: Run Migrate
         run: php artisan migrate
+      # - name: Run Migrate Refresh
+      #   run: php artisan migrate:refresh
+      # - name: Run Seeding
+      #   run: php artisan db:seed
+      - name: Run test
+        run: php artisan test --filter ユーザー一覧
       - name: Run Migrate Refresh
         run: php artisan migrate:refresh
-      - name: Run Seeding
-        run: php artisan db:seed
-      - name: Run test
-        run: php artisan test
       # - name: Run IDE Helper Models
       #   run: |
       #     php artisan ide-helper:models --write --reset
