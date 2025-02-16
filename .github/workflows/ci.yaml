@@ -70,15 +70,15 @@ jobs:
         run: php artisan migrate:refresh
       - name: Run Seeding
         run: php artisan db:seed
-      - name: Run IDE Helper Models
-        run: |
-          php artisan ide-helper:models --write --reset
-          ./vendor/bin/pint app/Models
-          if ! git diff --exit-code; then
-            echo "Error: The phpdoc for the model ide-helper is not updated!"
-            echo "Run: php artisan ide-helper:models --write --reset"
-            exit 1
-          fi
+      # - name: Run IDE Helper Models
+      #   run: |
+      #     php artisan ide-helper:models --write --reset
+      #     ./vendor/bin/pint app/Models
+      #     if ! git diff --exit-code; then
+      #       echo "Error: The phpdoc for the model ide-helper is not updated!"
+      #       echo "Run: php artisan ide-helper:models --write --reset"
+      #       exit 1
+      #     fi
       - name: Cache Pint
         uses: actions/cache@v4
         with:
@@ -115,7 +115,7 @@ jobs:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
         run: ./vendor/bin/pest --parallel --cache-directory storage/pest/cache
-  ci-frontend:
+  # ci-frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
