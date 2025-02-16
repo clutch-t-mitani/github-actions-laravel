@@ -1,0 +1,135 @@
+name: Continuous Integration
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+  workflow_dispatch:
+env:
+  DB_CONNECTION: mysql
+  DB_HOST: 127.0.0.1
+  DB_PORT: 3306
+  DB_DATABASE: laravel
+  DB_USERNAME: sail
+  DB_PASSWORD: password
+jobs:
+  ci-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      db:
+        image: mysql/mysql-server:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: 'laravel'
+          MYSQL_USER: 'sail'
+          MYSQL_PASSWORD: 'password'
+          MYSQL_ROOT_PASSWORD: 'password'
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        options: >-
+          --health-cmd "mysqladmin ping"
+          --health-start-period 30s
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP with composer v2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer:v2
+      - name: Cache Vendor
+        id: cache-vendor
+        uses: actions/cache@v4
+        with:
+          path: ./vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install Dependencies
+        if: steps.cache-vendor.outputs.cache-hit != 'true'
+        run: composer install --quiet --prefer-dist --no-progress --no-interaction --no-scripts --no-ansi
+      - name: Laravel Setting
+        run: |
+          cp .env.example .env
+          php artisan optimize
+          git config --local core.fileMode false
+          chmod -R 777 storage bootstrap/cache
+      - name: PHP Version
+        run: php --version
+      - name: Composer Version
+        run: composer --version
+      - name: Laravel Version
+        run: php artisan --version
+      - name: Composer Validate
+        run: composer validate
+      - name: Run Migrate
+        run: php artisan migrate
+      - name: Run Migrate Refresh
+        run: php artisan migrate:refresh
+      - name: Run Seeding
+        run: php artisan db:seed
+      - name: Run IDE Helper Models
+        run: |
+          php artisan ide-helper:models --write --reset
+          ./vendor/bin/pint app/Models
+          if ! git diff --exit-code; then
+            echo "Error: The phpdoc for the model ide-helper is not updated!"
+            echo "Run: php artisan ide-helper:models --write --reset"
+            exit 1
+          fi
+      - name: Cache Pint
+        uses: actions/cache@v4
+        with:
+          path: ./.pint.cache
+          key: ${{ runner.os }}-pint-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-pint-
+      - name: Run Pint
+        run: ./vendor/bin/pint --test
+      - name: Cache Rector
+        uses: actions/cache@v4
+        with:
+          path: ./storage/rector/cache
+          key: ${{ runner.os }}-rector-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-rector-
+      - name: Run Rector
+        run: ./vendor/bin/rector process --dry-run
+      - name: Cache PHPStan
+        uses: actions/cache@v4
+        with:
+          path: ./storage/phpstan
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyze
+      - name: Cache Pest
+        uses: actions/cache@v4
+        with:
+          path: ./storage/pest/cache
+          key: ${{ runner.os }}-pest-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-pest-
+      - name: Run Pest
+        env:
+          SESSION_DRIVER: array
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+        run: ./vendor/bin/pest --parallel --cache-directory storage/pest/cache
+  ci-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '>=20.17.0'
+          cache: 'pnpm'
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Run Build
+        run: pnpm run build
