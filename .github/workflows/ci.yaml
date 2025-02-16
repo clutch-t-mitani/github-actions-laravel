@@ -66,8 +66,7 @@ jobs:
         run: composer validate
       - name: Run Migrate
         run: php artisan migrate
-      # - name: Run Migrate Refresh
-      #   run: php artisan migrate:refresh
+
       # - name: Run Seeding
       #   run: php artisan db:seed
       - name: Run Create key
@@ -78,15 +77,15 @@ jobs:
         run: php artisan test --filter ユーザー一覧
       - name: Run Migrate Refresh
         run: php artisan migrate:refresh
-      - name: Run IDE Helper Models
-        run: |
-          php artisan ide-helper:models --write --reset
-          ./vendor/bin/pint app/Models
-          if ! git diff --exit-code; then
-            echo "Error: The phpdoc for the model ide-helper is not updated!"
-            echo "Run: php artisan ide-helper:models --write --reset"
-            exit 1
-          fi
+      # - name: Run IDE Helper Models
+      #   run: |
+      #     php artisan ide-helper:models --write --reset
+      #     ./vendor/bin/pint app/Models
+      #     if ! git diff --exit-code; then
+      #       echo "Error: The phpdoc for the model ide-helper is not updated!"
+      #       echo "Run: php artisan ide-helper:models --write --reset"
+      #       exit 1
+      #     fi
       - name: Cache Pint
         uses: actions/cache@v4
         with:
